@@ -192,7 +192,7 @@ tells you how much security margin a masked implementation actually has.
 ---
 
 ## Alternative Implementation / 备选实现
-
+https://github.com/Changyin-4B4/Masked-AES-Decryption-CortexM0/blob/main/readme.md
 `fault_implement/` 里还有另一个版本，把同一数据的两个 share 分别打包在
 同一寄存器的高低 16 位来做并行计算。当时的想法是这样能省点事，
 结果没快多少，反而埋了个坑。
@@ -233,7 +233,8 @@ The calling convention differs slightly from the primary implementation.
    Information Security and Privacy Research (SEC 2012).
    IFIP Advances in Information and Communication Technology, vol. 376,
    pp. 287–298. Springer, Berlin, Heidelberg.
-   https://doi.org/10.1007/978-3-642-30436-1_24(Source of the depth-16 AES S-box Boolean circuit / AES S 盒布尔电路来源)*
+   https://doi.org/10.1007/978-3-642-30436-1_24
+   (Source of the depth-16 AES S-box Boolean circuit / AES S 盒布尔电路来源)*
 
 ---
 
