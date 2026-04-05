@@ -125,6 +125,8 @@ static void fill_high_16bits_random(void) {
     }
 }
 
+/* 以下为典型调用流程示例，展示如何在主循环中使用 asm_aes */
+/* The following illustrates a typical call sequence in a main loop */
 uint8_t ciphertext[16];
 for (int i = 0; i < 16; i++) {
     ciphertext[i] = sys_usart_recv_byte();
