@@ -49,7 +49,7 @@ def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument(
         "--h5",
-        default=r"h:\python_programme\VISION_AES\V2-traces5001-10000.h5",
+        default=r"",
         help="H5 trace 文件绝对路径"
     )
     parser.add_argument("--traces-ds", default="traces", help="功耗波形数据集名称")
