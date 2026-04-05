@@ -40,6 +40,80 @@ uint8_t pool1[256] __attribute__((aligned(4))); // 主输出池 / Primary output
 uint8_t pool2[256];                              // 二级种子池 / Secondary seed pool
 uint8_t pool3[256];                              // 三级熵池，ADC 直接注入 / Tertiary entropy pool, fed directly by ADC
 uint8_t reserve_pool[1792] __attribute__((aligned(4))); // 对齐要求来自 asm_aes 的 LDMIA/STMIA / Alignment required by LDMIA/STMIA in asm_aes
+/*
+ * reserve_pool 大小说明 / Reserve Pool Size Rationale
+ *
+ * 理论最小需求 / Theoretical minimum requirement:
+ *
+ *   - ISW 乘法随机数：asm_aes 汇编中实际 AND 门数量为 340 个。
+ *     每个 AND 门消耗一个随机数。理论上每个随机数只需 16 位，
+ *     但 asm_aes 使用 LDMIA Rn!, {Rt} 逐个加载随机数并自动递进指针。
+ *     Cortex-M0 上 LDRH 不支持自动后递进，若改用 LDRH 则每次需要
+ *     额外的 ADDS 指令来移动基址，引入不必要的开销。
+ *     因此选择 LDMIA（4 字节对齐，自动后递进），每次读取 4 字节，
+ *     仅使用低 16 位，高 16 位丢弃。
+ *     这是以空间换指令数的有意取舍，随机池的产出速率足以覆盖此开销。
+ *     小计：340 × 4 = 1360 字节
+ *
+ *   - 初始密文掩码：16 字节
+ *
+ *   - 轮密钥掩码：11 轮 × 8 个比特平面 × 2 字节 = 176 字节
+ *     （由 fill_high_16bits_random 从池子末尾取用）
+ *
+ *   理论合计：1360 + 16 + 176 = 1552 字节（如有出入请以实际统计为准）
+ *
+ * 实际取值 1792 的原因 / Why 1792:
+ *
+ *   1792 = 7 × 256
+ *
+ *   配套的 prng_fill_reserve_pool 以 256 字节为单位生成随机数，
+ *   取整数倍可避免边界处理，简化实现。
+ *
+ * 如需移植或修改 / If you need to adapt this:
+ *
+ *   1. 重新统计汇编中 AND 门的数量（若修改了 S 盒电路）
+ *   2. 按上述公式重新计算理论最小值
+ *   3. 向上取整到你的 PRNG 批量大小的整数倍
+ *   4. 对应修改 fill_high_16bits_random 中的 pool_idx 起始值
+ *
+ * ---------------------------------------------------------------------
+ *
+ * The pool size is determined by three consumers:
+ *
+ *   - ISW multiplication randomness: 340 AND gates, counted directly
+ *     from the assembly (includes all AND instructions after ISW
+ *     masking expansion, not an estimate from the unmasked circuit).
+ *   - Each AND gate consumes one random value. Only 16 bits are needed
+ *     per value, but asm_aes loads them with LDMIA Rn!, {Rt}, which
+ *     auto-increments the base pointer by 4 after each load.
+ *     On Cortex-M0, LDRH does not support auto-increment; using LDRH
+ *     would require an additional ADDS instruction per load to advance
+ *     the base pointer, adding unnecessary overhead.
+ *     LDMIA (4-byte aligned, auto-increment) is therefore used instead:
+ *     4 bytes are loaded each time, only the lower 16 bits are used,
+ *     and the upper 16 bits are discarded.
+ *     This is a deliberate space-for-instructions trade-off; the PRNG
+ *     throughput is sufficient to absorb the wasted bytes.
+ *     Subtotal: 340 × 4 = 1,360 bytes
+ *
+ *   - Initial ciphertext masking: 16 bytes
+ *
+ *   - Round-key masking: 11 rounds × 8 bit-planes × 2 bytes = 176 bytes
+ *     (consumed from the END of the pool by fill_high_16bits_random)
+ *
+ *   Theoretical total: 1360 + 16 + 176 = 1552 bytes (verify against
+ *   actual assembly if modified)
+ *
+ * 1792 = 7 × 256 is chosen because prng_fill_reserve_pool generates
+ * randomness in 256-byte batches; using an integer multiple avoids
+ * boundary handling in the PRNG implementation.
+ *
+ * To adapt for a different S-box circuit or PRNG batch size:
+ *   1. Re-count AND gates in the modified circuit
+ *   2. Recalculate the theoretical minimum using the formula above
+ *   3. Round up to the nearest multiple of your PRNG batch size
+ *   4. Update the pool_idx starting value in fill_high_16bits_random
+ */
 
 uint8_t idx1 = 0;    // Pool 1 当前指针，溢出自动模 256 / Pool 1 pointer, wraps mod 256 automatically
 uint8_t idx2 = 0;    // Pool 2 当前指针 / Pool 2 pointer
