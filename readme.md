@@ -192,7 +192,6 @@ tells you how much security margin a masked implementation actually has.
 ---
 
 ## Alternative Implementation / 备选实现
-https://github.com/Changyin-4B4/Masked-AES-Decryption-CortexM0/blob/main/readme.md
 `fault_implement/` 里还有另一个版本，把同一数据的两个 share 分别打包在
 同一寄存器的高低 16 位来做并行计算。当时的想法是这样能省点事，
 结果没快多少，反而埋了个坑。
