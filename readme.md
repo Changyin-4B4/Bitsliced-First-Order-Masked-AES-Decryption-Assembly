@@ -20,9 +20,13 @@ This project was written from scratch to fill that gap.
 C 语言实现在编译器优化下难以保证掩码方案的安全性不被破坏，因此从零开始写了这份汇编实现。
 
 **Platform / 平台:** STM32F051 (ARM Cortex-M0, 8 MHz)
+
 **Algorithm / 算法:** AES-128 Decryption / AES-128 解密
+
 **Cycle count / 指令周期:** 26,801 cycles
+
 **Masking / 掩码方案:** First-order Boolean masking / 一阶布尔掩码
+
 **Representation / 数据表示:** Bitsliced, 16-bit per bit-plane / 比特切片，每比特平面 16 位
 
 ---
@@ -178,14 +182,31 @@ tells you how much security margin a masked implementation actually has.
 
 具体来说，以下问题仍然开放 / Specifically, the following remain open:
 
-1. **增大迹线数量进行一阶 TVLA 验证****Extend trace count for first-order TVLA**当前 5,000 条已有一定说服力，50,000 条以上会更好。The current 5,000-trace result is reasonable; 50,000+ would be more convincing.
-2. **二阶 TVLA 和二阶 CPA****Second-order TVLA and CPA**一阶掩码理论上无法抵抗二阶攻击，攻破本实现所需的迹线数量目前未知。A first-order masking scheme is theoretically vulnerable to second-order attacks.
+1. **增大迹线数量进行一阶 TVLA 验证**
+   
+   **Extend trace count for first-order TVLA**
+   
+   当前 5,000 条已有一定说服力，50,000 条以上会更好。
+   
+   The current 5,000-trace result is reasonable; 50,000+ would be more convincing.
+2. **二阶 TVLA 和二阶 CPA**
+   
+   **Second-order TVLA and CPA**
+   
+   一阶掩码理论上无法抵抗二阶攻击，攻破本实现所需的迹线数量目前未知。
+   
+   A first-order masking scheme is theoretically vulnerable to second-order attacks.
    The number of traces required to break this implementation is an open question.
-3. **使用汉明重量相同的输入重新进行 Fixed-vs-Fixed 测试****Re-run Fixed-vs-Fixed TVLA with HW-balanced inputs**初始测试中三组固定输入的汉明重量不同（HW = 59 / 65 / 71），
-   导致结果存在干扰，需要重新评估。The initial Fixed-vs-Fixed evaluation was confounded by differing Hamming
-   weights (HW = 59 / 65 / 71) across the three input groups; a clean
-   re-evaluation is needed.
-4. **模板攻击 / Template attacks**
+3. **使用汉明重量相同的输入重新进行 Fixed-vs-Fixed 测试**
+   
+   **Re-run Fixed-vs-Fixed TVLA with HW-balanced inputs**
+   
+   初始测试中三组固定输入的汉明重量不同（HW = 59 / 65 / 71），导致结果存在干扰，需要重新评估。
+   
+   The initial Fixed-vs-Fixed evaluation was confounded by differing Hamming
+   weights (HW = 59 / 65 / 71) across the three input groups; a clean re-evaluation is needed.
+5. **模板攻击 / Template attacks**
+   
    尚未评估，有条件的可以试试。
    Not evaluated. If you have a clone device, feel free to try.
 
